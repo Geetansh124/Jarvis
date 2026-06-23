@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JARVIS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0d0d0d; color: #00ff88; font-family: Arial; }
+        .container { max-width: 700px; margin: 40px auto; padding: 20px; }
+        h1 { text-align: center; font-size: 2.5em; letter-spacing: 6px; margin-bottom: 20px; }
+        #chat-box { background: #1a1a1a; border-radius: 12px; padding: 20px; height: 420px; overflow-y: auto; margin-bottom: 16px; }
+        .user-msg { color: #ffffff; margin: 10px 0; }
+        .jarvis-msg { color: #00ff88; margin: 10px 0; }
+        .controls { display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #1a1a1a; color: white; font-size: 15px; }
+        input:focus { outline: 1px solid #00ff88; }
+        button { padding: 12px 18px; border-radius: 8px; border: none; background: #00ff88; color: #000; font-weight: bold; cursor: pointer; }
+        #mic-btn { background: #ff4444; color: white; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>J.A.R.V.I.S</h1>
+    <div id="chat-box">
+        <div class="jarvis-msg">Jarvis: Hello Sir! I am JARVIS. How can I help you today?</div>
+    </div>
+    <div class="controls">
+        <input type="text" id="user-input" placeholder="Ask me anything... (English or Hindi)"/>
+        <button onclick="sendMessage()">Send</button>
+        <button id="mic-btn" onclick="startVoice()">🎤 Mic</button>
+    </div>
+</div>
+
+<script>
+    // Add message to chat box
+    function addMessage(text, type) {
+        const box = document.getElementById('chat-box');
+        const div = document.createElement('div');
+        div.className = type === 'user' ? 'user-msg' : 'jarvis-msg';
+        div.textContent = (type === 'user' ? 'You: ' : 'Jarvis: ') + text;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    // Speak the response
+    function speak(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // Send message to Django
+    async function sendMessage() {
+        const input = document.getElementById('user-input');
+        const command = input.value.trim();
+        if (!command) return;
+
+        addMessage(command, 'user');
+        input.value = '';
+
+        const res = await fetch('/ask/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command })
+        });
+
+        const data = await res.json();
+        addMessage(data.response, 'jarvis');
+        speak(data.response);
+    }
+
+    // Voice input
+    function startVoice() {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.start();
+        recognition.onresult = (e) => {
+            document.getElementById('user-input').value = e.results[0][0].transcript;
+            sendMessage();
+        };
+        recognition.onerror = () => {
+            alert('Mic not working. Please allow microphone access.');
+        };
+    }
+
+    // Enter key support
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+</script>
+</body>
+</html>
