@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: jarvis-web-service
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "cd Jarvis && python manage.py migrate && gunicorn jarvis_project.wsgi:application"
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
