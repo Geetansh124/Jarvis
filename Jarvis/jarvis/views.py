@@ -12,7 +12,13 @@ import json, datetime, random, os
 # Load .env file
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+
+def get_groq_client():
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key or api_key == "gsk_dummyapikey":
+        return None
+    return Groq(api_key=api_key)
 
 
 # Main page
@@ -42,27 +48,31 @@ def ask_jarvis(request):
 
         # Groq AI — everything else
         else:
-            try:
-                res = client.chat.completions.create(
-                    model="llama-3.1-8b-instant",
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": (
-                                "You are JARVIS, an AI assistant like from Iron Man. "
-                                "Always start your reply with 'Sir,'. "
-                                "If the user writes in Hindi, reply in Hindi. "
-                                "If the user writes in English, reply in English. "
-                                "Keep answers short and helpful — max 3-4 sentences."
-                            ),
-                        },
-                        {"role": "user", "content": command},
-                    ],
-                    max_tokens=300,
-                )
-                response = res.choices[0].message.content
-            except Exception as e:
-                response = f"Sir, something went wrong: {str(e)}"
+            client = get_groq_client()
+            if not client:
+                response = "Sir, my systems are offline. Please configure my GROQ_API_KEY in the Render dashboard."
+            else:
+                try:
+                    res = client.chat.completions.create(
+                        model="llama-3.1-8b-instant",
+                        messages=[
+                            {
+                                "role": "system",
+                                "content": (
+                                    "You are JARVIS, an AI assistant like from Iron Man. "
+                                    "Always start your reply with 'Sir,'. "
+                                    "If the user writes in Hindi, reply in Hindi. "
+                                    "If the user writes in English, reply in English. "
+                                    "Keep answers short and helpful — max 3-4 sentences."
+                                ),
+                            },
+                            {"role": "user", "content": command},
+                        ],
+                        max_tokens=300,
+                    )
+                    response = res.choices[0].message.content
+                except Exception as e:
+                    response = f"Sir, something went wrong: {str(e)}"
 
         ChatHistory.objects.create(user_message=command, jarvis_response=response)
         return JsonResponse({"response": response})
