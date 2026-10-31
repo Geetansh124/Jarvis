@@ -1,108 +1,53 @@
-# J.A.R.V.I.S. (Just A Rather Very Intelligent System)
+<div align="center">
 
-J.A.R.V.I.S. is a Django-based voice-activated AI assistant inspired by Iron Man's legendary virtual assistant. It leverages the Groq API (powered by `llama-3.1-8b-instant`) to provide intelligent text and voice responses in both English and Hindi.
+<img src="https://shieldcn.dev/header/gradient.svg?title=J.A.R.V.I.S.&subtitle=Voice-enabled%20bilingual%20Django%20assistant&accent=%2322c55e&mode=dark" alt="Jarvis banner" width="100%" />
 
----
+![Python](https://shieldcn.dev/badge/python-django-092E20.svg?logo=django&variant=secondary)
+![Groq](https://shieldcn.dev/badge/LLM-Groq-f55036.svg?variant=secondary)
+![Stars](https://shieldcn.dev/github/stars/Geetansh124/Jarvis.svg?variant=outline)
 
-## 🚀 Key Features
+**A Django assistant prototype that sends prompts to Groq and supports browser-based speech input and spoken responses.**
 
-- **Groq LLM Integration:** Powered by `llama-3.1-8b-instant` to deliver fast, contextual, and helpful answers.
-- **Bilingual Support:** Automatically responds in English or Hindi depending on the language of your query.
-- **Voice Capabilities:**
-  - **Speech-to-Text:** Use your microphone to query Jarvis directly using the HTML5 Web Speech Recognition API.
-  - **Text-to-Speech:** Jarvis replies speak back to you using the browser's speech synthesis engine.
-- **Chat History Logging:** Keeps track of every interaction in a local SQLite database (`ChatHistory` model).
-- **Sleek Cyberpunk UI:** Custom dark-themed user interface with signature green glowing aesthetics.
+[Source](https://github.com/Geetansh124/Jarvis) · [Issues](https://github.com/Geetansh124/Jarvis/issues)
 
----
+</div>
 
-## 📁 Project Structure
+## Features in the current code
 
-The project has a nested repository structure. The primary application is located inside the inner `Jarvis` directory:
+- Django pages and JSON request handling for assistant prompts.
+- Groq client integration configured with GROQ_API_KEY.
+- Browser Web Speech APIs for voice input and speech synthesis; support and microphone access vary by browser.
+- A Django ChatHistory model for local conversation records.
 
-```text
-Jarvis/
-│
-├── Jarvis/                         # <-- Main Django Application Directory
-│   ├── jarvis/                     # Django App containing logic, models, and views
-│   │   ├── migrations/
-│   │   ├── models.py               # ChatHistory database model
-│   │   ├── urls.py
-│   │   └── views.py                # Main request logic & Groq API client integration
-│   │
-│   ├── jarvis_project/             # Django Project Configuration
-│   │   ├── settings.py
-│   │   └── urls.py
-│   │
-│   ├── templates/
-│   │   └── index.html              # Frontend UI with Speech API integration
-│   │
-│   ├── .env                        # Local environment credentials (API Key)
-│   ├── db.sqlite3                  # Local database
-│   └── manage.py                   # Django CLI utility
-│
-├── venv/                           # Virtual Environment
-└── manage.py                       # Outer CLI wrapper
-```
+~~~mermaid
+flowchart LR
+  B[Browser text or speech] --> D[Django view]
+  D --> G[Groq API]
+  G --> D
+  D --> B
+  D --> DB[(Local Django database)]
+~~~
 
----
+## Run locally
 
-## 🛠️ Prerequisites & Setup
+From the repository root, create and activate a Python virtual environment. Install dependencies:
 
-Follow these steps to set up and run J.A.R.V.I.S. on your local machine:
+~~~bash
+python -m pip install -r requirements.txt
+~~~
 
-### 1. Set Up the Virtual Environment
-First, ensure you have Python 3.x installed. Navigate to the project root and activate the pre-configured virtual environment:
+Set GROQ_API_KEY in your shell or a local .env file that is not committed. Then run:
 
-**On Windows (PowerShell):**
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-**On Windows (CMD):**
-```cmd
-.\venv\Scripts\activate.bat
-```
-
-**On macOS/Linux:**
-```bash
-source venv/bin/activate
-```
-
-### 2. Install Dependencies
-Install the required packages in your active environment:
-```bash
-pip install django groq python-dotenv
-```
-
-### 3. Configure the Environment Variables
-Create a `.env` file in the inner `Jarvis/` directory (or modify the existing one) to specify your Groq API Key:
-```env
-GROQ_API_KEY=your_groq_api_key_here
-```
-
----
-
-## ⚡ Running the Application
-
-Once your virtual environment is active and dependencies are installed, navigate to the directory containing `manage.py` and start the server:
-
-### Run migrations to set up the database:
-```bash
+~~~bash
 python manage.py migrate
-```
-
-### Start the development server:
-```bash
 python manage.py runserver
-```
+~~~
 
-Open your web browser and navigate to `http://127.0.0.1:8000/` to start interacting with Jarvis!
+Open http://127.0.0.1:8000. Text input is the fallback when browser speech features are unavailable.
 
----
+## Configuration and limitations
 
-## 🗣️ How to Use
-
-1. **Text Inputs:** Type your command in the input bar and press **Enter** or click **Send**.
-2. **Voice Command:** Click the **🎤 Mic** button, give permissions to use the microphone, and speak. Jarvis will automatically capture your speech and submit the message.
-3. **Voice Response:** Jarvis will read out its response aloud automatically.
+- Responses require a valid Groq API key, network access, and an available model configured in the code.
+- Do not commit .env, API keys, or real conversation history. Review Django settings before deployment; runserver is for local development.
+- Speech recognition is browser-dependent and may be processed by the browser's speech service.
+- Treat generated answers as suggestions and verify important information.
